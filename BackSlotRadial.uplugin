@@ -1,0 +1,34 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "Back Slot Radial",
+	"Description": "Hold R on foot (rebindable under Options > Controls) to open a radial menu of everything in your inventory that fits your back slot, then release over one to equip it, or over the X to unequip. Works with modded back equipment such as Wing Development.",
+	"Category": "Modding",
+	"CreatedBy": "leanwrldd",
+	"CreatedByURL": "https://github.com/leanwrldd",
+	"DocsURL": "https://github.com/leanwrldd/BackSlotRadial",
+	"MarketplaceURL": "",
+	"SupportURL": "https://github.com/leanwrldd/BackSlotRadial/issues",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"BuiltInInitialFeatureState": "Active",
+	"Modules": [
+		{
+			"Name": "BackSlotRadial",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "SML",
+			"Enabled": true,
+			"SemVersion": "^3.12.0"
+		}
+	],
+	"SemVersion": "1.0.0",
+	"GameVersion": ">=491125"
+}

@@ -19,7 +19,8 @@ Built with [SML](https://ficsit.app/mod/SML) (Satisfactory Mod Loader).
 - Looks and sounds like the game's own build-mode radial
 - Works with back equipment added by other mods, such as Wing Development. The menu asks the
   back slot itself what fits, so no per-mod support is needed.
-- Stays out of the way while building, holding a weapon (R reloads), driving, or in menus
+- Stays out of the way while building, driving, or in menus. While you hold a weapon it only
+  stays closed if the menu key is also your reload key, so rebind it to use it with a weapon out.
 
 ## Known limitations
 

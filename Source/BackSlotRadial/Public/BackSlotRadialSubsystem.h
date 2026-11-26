@@ -25,8 +25,10 @@ public:
 	virtual bool IsTickableWhenPaused() const override { return true; }
 
 private:
-	/// False wherever the key belongs to something else: building, weapons, menus, vehicles.
-	static bool CanUseMenu(AFGPlayerController* Controller, AFGCharacterPlayer* Character);
+	/// False wherever the key belongs to something else: building, menus, vehicles, and weapons
+	/// when the menu key is also their reload key.
+	static bool CanUseMenu(AFGPlayerController* Controller, AFGCharacterPlayer* Character,
+		const class UEnhancedPlayerInput* Input, const class UInputAction* OpenAction);
 
 	void OpenMenu(AFGPlayerController* Controller, AFGCharacterPlayer* Character);
 	void UpdateSelection(AFGPlayerController* Controller);

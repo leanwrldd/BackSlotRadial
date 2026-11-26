@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
+	"VersionName": "1.0.1",
 	"FriendlyName": "Back Slot Radial",
 	"Description": "Hold R on foot (rebindable under Options > Controls) to open a radial menu of everything in your inventory that fits your back slot, then release over one to equip it, or over the X to unequip. Works with modded back equipment such as Wing Development.",
 	"Category": "Modding",
@@ -29,6 +29,6 @@
 			"SemVersion": "^3.12.0"
 		}
 	],
-	"SemVersion": "1.0.0",
+	"SemVersion": "1.0.1",
 	"GameVersion": ">=491125"
 }

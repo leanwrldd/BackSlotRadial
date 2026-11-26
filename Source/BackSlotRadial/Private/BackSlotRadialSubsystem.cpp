@@ -69,7 +69,68 @@ TStatId UBackSlotRadialSubsystem::GetStatId() const
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UBackSlotRadialSubsystem, STATGROUP_Tickables);
 }
 
-bool UBackSlotRadialSubsystem::CanUseMenu(AFGPlayerController* Controller, AFGCharacterPlayer* Character)
+namespace
+{
+// True when the key now holding the menu open also drives a reload (tap R to reload, hold R to
+// switch ammo). Reads the live mappings rather than assuming R, and only the keys actually down,
+// so a shared gamepad button doesn't block a keyboard press: binding the menu to its own key ends
+// the clash.
+bool OpenKeyClashesWithReload(const UEnhancedPlayerInput* Input, const UInputAction* OpenAction)
+{
+	const TArray<FEnhancedActionKeyMapping>& mappings = Input->GetEnhancedActionMappings();
+	for (const FEnhancedActionKeyMapping& open : mappings)
+	{
+		if (open.Action != OpenAction || !Input->IsPressed(open.Key))
+		{
+			continue;
+		}
+		for (const FEnhancedActionKeyMapping& other : mappings)
+		{
+			if (other.Action != nullptr && other.Action != OpenAction && other.Key == open.Key
+				&& other.Action->GetName().Contains(TEXT("Reload")))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+}
+
+static void LogBlockReason(AFGPlayerController* Controller, AFGCharacterPlayer* Character,
+	const UEnhancedPlayerInput* Input, const UInputAction* OpenAction)
+{
+	if (Character == nullptr)
+	{
+		UE_LOG(LogBackSlotRadial, Log, TEXT("Menu blocked: no character (vehicle or photo mode)."));
+		return;
+	}
+	const AFGEquipment* arms = Character->GetEquipmentInSlot(EEquipmentSlot::ES_ARMS);
+	UE_LOG(LogBackSlotRadial, Log,
+		TEXT("Menu blocked: alive=%d buildGun=%d driving=%d pause=%d cursor=%d arms=%s weapon=%d reloadClash=%d"),
+		Character->IsAliveAndWell(), Character->IsBuildGunEquipped(), Character->IsDrivingVehicle(),
+		Controller->IsPauseMenuOpen(), Controller->ShouldShowMouseCursor(),
+		arms != nullptr ? *arms->GetClass()->GetName() : TEXT("none"),
+		Cast<AFGWeapon>(arms) != nullptr, OpenKeyClashesWithReload(Input, OpenAction));
+	for (const FEnhancedActionKeyMapping& open : Input->GetEnhancedActionMappings())
+	{
+		if (open.Action != OpenAction)
+		{
+			continue;
+		}
+		for (const FEnhancedActionKeyMapping& other : Input->GetEnhancedActionMappings())
+		{
+			if (other.Key == open.Key)
+			{
+				UE_LOG(LogBackSlotRadial, Log, TEXT("  key %s -> %s"), *open.Key.ToString(),
+					other.Action != nullptr ? *other.Action->GetName() : TEXT("null"));
+			}
+		}
+	}
+}
+
+bool UBackSlotRadialSubsystem::CanUseMenu(AFGPlayerController* Controller, AFGCharacterPlayer* Character,
+	const UEnhancedPlayerInput* Input, const UInputAction* OpenAction)
 {
 	// Photo mode possesses a camera pawn, so Character is null there, as it is in vehicles.
 	return Character != nullptr
@@ -78,8 +139,8 @@ bool UBackSlotRadialSubsystem::CanUseMenu(AFGPlayerController* Controller, AFGCh
 		&& !Character->IsDrivingVehicle()
 		&& !Controller->IsPauseMenuOpen()
 		&& !Controller->ShouldShowMouseCursor()
-		// R reloads.
-		&& Cast<AFGWeapon>(Character->GetEquipmentInSlot(EEquipmentSlot::ES_ARMS)) == nullptr;
+		&& (Cast<AFGWeapon>(Character->GetEquipmentInSlot(EEquipmentSlot::ES_ARMS)) == nullptr
+			|| !OpenKeyClashesWithReload(Input, OpenAction));
 }
 
 void UBackSlotRadialSubsystem::Tick(float DeltaTime)
@@ -111,7 +172,7 @@ void UBackSlotRadialSubsystem::Tick(float DeltaTime)
 
 	AFGCharacterPlayer* character = Cast<AFGCharacterPlayer>(controller->GetPawn());
 	const bool bHeld = input->GetActionValue(OpenAction).Get<bool>();
-	const bool bUsable = CanUseMenu(controller, character);
+	const bool bUsable = CanUseMenu(controller, character, input, OpenAction);
 
 	if (Menu != nullptr)
 	{
@@ -141,6 +202,7 @@ void UBackSlotRadialSubsystem::Tick(float DeltaTime)
 		if (!bUsable)
 		{
 			bWaitingForRelease = true;
+			LogBlockReason(controller, character, input, OpenAction);
 		}
 		else
 		{
